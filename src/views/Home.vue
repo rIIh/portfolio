@@ -1,35 +1,29 @@
 <template lang="pug">
 .parent
-  swiper.container(:options="swiperOptions" ref="main-view")
+  swiper.container(:options="swiperOptions" ref="swiper" key="swiper")
     swiper-slide(v-for="(repo, i) in repos" :key="i")
-      page(:repo="repo")
+      page(:repo="repo" style="padding-left: 150px")
         template(v-slot:title)
           h1 {{repo.name}}
         template(v-slot:tags)
-          v-icon(name="star" scale="1.5" label="tes")
+          //- v-icon(name="star" scale="1.5" label="tes")
           h2 {{repo.stargazers_count}}
           h2 {{repo.language}}
         p Hello
-  .color-box(ref="color-box")
-  
+  timeline(:data="swiper")
+  overlay-slider(:getter="getState" key="overlay")
 </template>
 
 <style lang="sass">
 .triangle
   background: white
 .parent
+  position: relative
   height: 100vh
 .container
+  position: relative
   width: 100%
   height: 100%
-.color-box
-  position: absolute
-  width: 100vw
-  left: 0
-  z-index: 100
-
-
-  background: white
 </style>
 
 <script lang="ts">
@@ -38,19 +32,27 @@ import Page from '@/components/Page.vue';
 import { getRepos } from '../api/gh';
 import { setInterval, clearInterval } from 'timers';
 import { lerp } from '@/api/scripts';
-import { parse } from 'path';
+import OverlaySlider from '@/components/OverlaySlider.vue';
+import Timeline from '@/components/Timeline.vue';
+
+let timer!: NodeJS.Timeout | undefined;
 
 @Component({
   components: {
     Page,
+    OverlaySlider,
+    Timeline
   },
 })
 export default class Home extends Vue {
   private get swiper() {
-    return (this.$refs['main-view'] as any).swiper;
+    if(!this.isMounted) { return; }
+    return (this.$refs.swiper as any).swiper;
   }
+  private isMounted: boolean = false;
   private repos: any[] = [];
   private swipeState: number = 0;
+  private animating: boolean = false;
   private swiperOptions = {
     direction: 'vertical',
     resistanse: false,
@@ -59,70 +61,54 @@ export default class Home extends Vue {
     speed: 600,
     on: {
       progress: () => this.setAnimating(true),
-      slideChangeTransitionEnd: () => this.setAnimating(false),
+      transitionEnd: () => this.setAnimating(false),
     },
   };
 
-  private animating: boolean = false;
+  private getState() {
+    return this.swipeState;
+  }
 
   @Watch('animating')
   private onAnimating(val: boolean, oldVal: boolean) {
-    if (oldVal) {
+    if (oldVal || !val) {
       return;
     }
     if (val) {
       const that = this;
-      const timer = setInterval(() => {
+      // console.log(that)
+      if (timer) { return; }
+      timer = setInterval(() => {
         that.onScroll();
         if (!that.animating) {
-          clearInterval(timer);
+          clearInterval(timer!);
+          timer = undefined;
         }
-      }, 1);
+      }, 10);
     }
   }
+
   private setAnimating(val: boolean) {
     this.animating = val;
   }
-  private get animator() {
-    return this.$refs['color-box'] as HTMLElement;
-  }
 
-  @Watch('swipeState')
-  private onStateChanged(val: number, oldVal: number) {
-    if (val === oldVal) {
-      return;
-    }
-    const scrollPerPage = window.innerHeight;
-    // let refSize = (this.$refs["color-box"] as Element);
-    const skewness = 30;
-    let value: number;
-    if (this.swipeState < 0.5) {
-      value = lerp(0, 30, this.swipeState * 2);
-    } else {
-      value = lerp(30, 0, this.swipeState * 2 - 1);
-    }
-    const path =
-      'polygon(0 ' +
-      value +
-      '%, 100% 0%, 100% ' +
-      (100 - value) +
-      '%, 0% 100%)';
-    // console.log(path)
-    // this.animator.style['clip-path'] = path;
-    this.animator.setAttribute('clip-path', path);
-    this.animator.style.top =
-      scrollPerPage - 2 * this.swipeState * scrollPerPage + 'px';
-  }
   private onScroll() {
     const scrollPerPage = window.innerHeight;
-    this.swipeState = -this.swiper.getTranslate() / scrollPerPage;
-    this.swipeState = this.swipeState - Math.floor(this.swipeState);
+    let state = -this.swiper.getTranslate() / scrollPerPage;
+    state = state - Math.floor(state);
+    if (this.swipeState === state) {
+      return;
+    }
+    this.swipeState = state;
   }
+
   private async loadRepos() {
     this.repos = await getRepos();
   }
+
   private mounted() {
     this.loadRepos();
+    this.isMounted = true;
   }
 }
 </script>

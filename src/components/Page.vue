@@ -13,32 +13,6 @@
   position: relative
   height: 100%
   width: 100%
-  &.dark
-    *
-      color: white
-  &.light
-    * 
-      color: black
-
-.page-content
-  position: absolute
-  margin: 32px
-  *
-    display: inline
-    padding: 0 8px
-  &.page-top-left
-    left: 0
-  &.page-top-right
-    right: 0
-  &.page-main
-    top: 50%
-    left: 50%
-    transform: translate(-50%, -50%)
-    margin: 0
-    width: 100%
-    height: 80%
-    background: grey
-
 </style>
 
 <script lang="ts">
