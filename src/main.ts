@@ -1,22 +1,22 @@
 import Vue from 'vue';
 import App from './App.vue';
 import store from './store';
-import scroll from 'vue-scroll';
-import scrollTo from 'vue-scroll-to'
-import VueAwesomeSwiper from 'vue-awesome-swiper'
+// import VueAwesomeSwiper from 'vue-awesome-swiper';
+const VueAwesomeSwiper = require('vue-awesome-swiper');
+
 
 import './registerServiceWorker';
 import './styles/global.scss';
-import 'swiper/dist/css/swiper.css'
+import 'swiper/dist/css/swiper.css';
 
 // TODO Shrink to only use
-import 'vue-awesome/icons'
-import Icon from 'vue-awesome/components/Icon'
-Vue.component('v-icon', Icon)
+import 'vue-awesome/icons';
+// import Icon from 'vue-awesome/components/Icon'
+const VIcon = require('vue-awesome/components/Icon');
+
+Vue.component('v-icon', VIcon);
 
 Vue.config.productionTip = false;
-Vue.use(scroll);
-Vue.use(scrollTo);
 Vue.use(VueAwesomeSwiper);
 
 

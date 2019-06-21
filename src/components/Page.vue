@@ -55,9 +55,6 @@ export default class ProjectPage extends Vue {
   private get theme() {
     return colors[this.themeIndex];
   }
-  public format(target: string) {
-    return _.startCase(target);
-  }
   get getRepo() {
     return this.repo
       ? this.repo

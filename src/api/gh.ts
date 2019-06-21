@@ -1,28 +1,17 @@
 import Rest from '@octokit/rest';
 
 const Hub = new Rest({})
-const user = "riih"
-export function init() {
-    return new Promise((res, rej) => {
-        Hub.users.getByUsername({
-            username: user
-        }).then(data => {
-            hubUser = data.data;
-            res(hubUser);
-        })
-            .catch(err => rej(err))
-    })
-}
+const User = "riih"
 
 export async function getRepos() {
     let response = await Hub.repos.listForUser({
-        username: user,
+        username: User,
         type: 'owner',
         per_page: 100,
     })
-    let repos: Array<any> = response.data;
+    let repos: any[] = response.data;
     repos = repos.filter((val) =>
-        val.fork === false
+        val.fork === false,
     )
     console.log(repos);
     return repos;

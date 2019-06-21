@@ -1,128 +1,120 @@
 <template lang="pug">
-.container
-  vue-scroll-snap.scroll(v-scroll="onScroll"  ref="scroll-area")
-    Page(v-for="(repo, i) in repos" :ref="'page-' + i" :key="repo.fullname" :repo="repo")
+.parent
+  swiper.container(:options="swiperOptions" ref="main-view")
+    swiper-slide(v-for="(repo, i) in repos" :key="i")
+      page(:repo="repo")
+        template(v-slot:title)
+          h1 {{repo.name}}
+        template(v-slot:tags)
+          v-icon(name="star" scale="1.5" label="tes")
+          h2 {{repo.stargazers_count}}
+          h2 {{repo.language}}
+        p Hello
   .color-box(ref="color-box")
+  
 </template>
 
+<style lang="sass">
+.triangle
+  background: white
+.parent
+  height: 100vh
+.container
+  width: 100%
+  height: 100%
+.color-box
+  position: absolute
+  width: 100vw
+  left: 0
+  z-index: 100
+
+
+  background: white
+</style>
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import Rest from "@octokit/rest";
+import Page from "@/components/Page.vue";
 import { getRepos } from "../api/gh";
-import VueScrollSnap from "vue-scroll-snap";
-import Page from "@/components/ProjectPage.vue";
-
-function lerp(start: number, end: number, amt: number) {
-  return (1 - amt) * start + amt * end;
-}
-
-enum Direction {
-  up,
-  down,
-  none
-}
+import { setInterval, clearInterval } from "timers";
+import { lerp } from '@/api/scripts'
+import { parse } from 'path';
 
 @Component({
   components: {
     Page,
-    VueScrollSnap
   }
 })
 export default class Home extends Vue {
-  //   @Prop() private msg!: string;
-  private repos = [];
-  private scrollPerPage = 0;
-  private scrollTop = 0;
-  private direction: Direction = Direction.none;
-  get state() {
-    if (this.scrollPerPage === 0) {
-      return 0;
-    }
-    let value = this.scrollTop / this.scrollPerPage;
-    value = value - Math.floor(value);
-    return value;
+  private get swiper() {
+    return (this.$refs["main-view"] as any).swiper;
   }
-  @Watch("scrollTop")
-  onScrollChanged(val: number, oldVal: number) {
-    let delta = oldVal - val;
-    if (this.state === 1 || this.state === 0) {
-      this.direction = Direction.none;
-      return;
+  private repos: any[] = [];
+  private swipeState: number = 0;
+  private swiperOptions = {
+    direction: "vertical",
+    resistanse: false,
+    mousewheel: true,
+    observer: true,
+    speed: 600,
+    on: {
+      progress: () => this.setAnimating(true),
+      slideChangeTransitionEnd: () => this.setAnimating(false)
     }
-    this.direction =
-      delta < 0 ? Direction.down : delta > 0 ? Direction.up : Direction.none;
-  }
-  public snap() {
-    const scrollArea = (this.$refs["scroll-area"] as Vue).$el;
-    switch (this.direction) {
-      case Direction.up:
-        if (this.current === 0) {
-          return;
+  };
+
+  private animating: boolean = false;
+
+  @Watch("animating")
+  private onAnimating(val: boolean, oldVal: boolean) {
+    if (oldVal) { return; }
+    if (val) {
+      const that = this;
+      const timer = setInterval(() => {
+        that.onScroll();
+        if (!that.animating) {
+          clearInterval(timer);
         }
-        scrollArea.scrollTo(
-          0,
-          lerp(this.scrollTop, (this.current - 1) * this.scrollPerPage, 0.5)
-        );
-        this.direction = Direction.none;
-        break;
-      case Direction.down:
-        if (this.current === this.repos.length - 1) {
-          return;
-        }
-        scrollArea.scrollTo(
-          0,
-          lerp(this.scrollTop, (this.current - 1) * this.scrollPerPage, 0.5)
-        );
-        // scrollArea.scrollTo(0, (this.current + 1) * this.scrollPerPage);
-        this.direction = Direction.none;
-        break;
-      default:
-        return;
+      }, 1);
     }
   }
-  get current() {
-    let value = (this.scrollTop + this.scrollPerPage / 2) / this.scrollPerPage;
-    return Math.floor(value);
+  private setAnimating(val: boolean) {
+    this.animating = val;
+  }
+  private get animator(){
+    return this.$refs['color-box'] as HTMLElement;
+  }
+
+  @Watch("swipeState")
+  private onStateChanged(val: number, oldVal: number) {
+    if (val === oldVal) { return; }
+    const scrollPerPage = window.innerHeight;
+    // let refSize = (this.$refs["color-box"] as Element);
+    const skewness = 30;
+    let value: number;
+    if(this.swipeState < 0.5) {
+      value = lerp(0, 30, this.swipeState * 2);
+    } else {
+      value = lerp(30, 0, this.swipeState * 2 - 1);
+    }
+    let path = 'polygon(0 ' + value + '%, 100% 0%, 100% ' + (100-value) + '%, 0% 100%)';
+    // console.log(path)
+    // this.animator.style['clip-path'] = path;
+    this.animator.setAttribute('clip-path', path);
+    this.animator.style.top =
+      scrollPerPage - 2 * this.swipeState * scrollPerPage + "px";
+  }
+  private onScroll() {
+    let scrollPerPage = window.innerHeight;
+    this.swipeState = -this.swiper.getTranslate() / scrollPerPage;
+    this.swipeState = this.swipeState - Math.floor(this.swipeState);
+
   }
   private async loadRepos() {
     this.repos = await getRepos();
   }
-  private updateSize() {
-    this.scrollPerPage = window.innerHeight;
-  }
-  private onScroll(
-    e: any,
-    position: { scrollTop: number; scrollLeft: number }
-  ) {
-    this.scrollTop = position.scrollTop;
-    this.$refs["color-box"].style.top =
-      this.scrollPerPage - 2 * this.state * this.scrollPerPage + "px";
-    // -(this.state * this.scrollPerPage * 2 - this.scrollPerPage) +
-    // this.scrollTop +
-    // "px";
-  }
   private mounted() {
     this.loadRepos();
-    this.updateSize();
-    window.addEventListener("resize", this.updateSize);
-    setInterval(this.snap, 500);
   }
 }
 </script>
-
-<style lang="sass">
-.container
-  overflow: hidden
-  height: 100%
-.scroll
-  overflow-y: scroll
-  height: 100%
-.color-box
-  position: absolute
-
-  height: 100vh
-  width: 100vw
-  left: 0
-  background: white
-</style>
