@@ -42,9 +42,9 @@
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import colors from "@/api/colors";
-import { randomInteger } from "@/api/scripts";
+import { Component, Prop, Vue } from 'vue-property-decorator';
+import colors from '@/api/colors';
+import { randomInteger } from '@/api/scripts';
 
 @Component
 export default class ProjectPage extends Vue {
@@ -59,11 +59,11 @@ export default class ProjectPage extends Vue {
     return this.repo
       ? this.repo
       : {
-          url: "#",
-          name: "test"
+          url: '#',
+          name: 'test',
         };
   }
-  mounted() {
+  private mounted() {
     this.themeIndex = randomInteger(0, colors.length - 1);
     // this.background = _.size()
   }

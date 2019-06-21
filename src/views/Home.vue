@@ -33,41 +33,43 @@
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import Page from "@/components/Page.vue";
-import { getRepos } from "../api/gh";
-import { setInterval, clearInterval } from "timers";
-import { lerp } from '@/api/scripts'
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import Page from '@/components/Page.vue';
+import { getRepos } from '../api/gh';
+import { setInterval, clearInterval } from 'timers';
+import { lerp } from '@/api/scripts';
 import { parse } from 'path';
 
 @Component({
   components: {
     Page,
-  }
+  },
 })
 export default class Home extends Vue {
   private get swiper() {
-    return (this.$refs["main-view"] as any).swiper;
+    return (this.$refs['main-view'] as any).swiper;
   }
   private repos: any[] = [];
   private swipeState: number = 0;
   private swiperOptions = {
-    direction: "vertical",
+    direction: 'vertical',
     resistanse: false,
     mousewheel: true,
     observer: true,
     speed: 600,
     on: {
       progress: () => this.setAnimating(true),
-      slideChangeTransitionEnd: () => this.setAnimating(false)
-    }
+      slideChangeTransitionEnd: () => this.setAnimating(false),
+    },
   };
 
   private animating: boolean = false;
 
-  @Watch("animating")
+  @Watch('animating')
   private onAnimating(val: boolean, oldVal: boolean) {
-    if (oldVal) { return; }
+    if (oldVal) {
+      return;
+    }
     if (val) {
       const that = this;
       const timer = setInterval(() => {
@@ -81,34 +83,40 @@ export default class Home extends Vue {
   private setAnimating(val: boolean) {
     this.animating = val;
   }
-  private get animator(){
+  private get animator() {
     return this.$refs['color-box'] as HTMLElement;
   }
 
-  @Watch("swipeState")
+  @Watch('swipeState')
   private onStateChanged(val: number, oldVal: number) {
-    if (val === oldVal) { return; }
+    if (val === oldVal) {
+      return;
+    }
     const scrollPerPage = window.innerHeight;
     // let refSize = (this.$refs["color-box"] as Element);
     const skewness = 30;
     let value: number;
-    if(this.swipeState < 0.5) {
+    if (this.swipeState < 0.5) {
       value = lerp(0, 30, this.swipeState * 2);
     } else {
       value = lerp(30, 0, this.swipeState * 2 - 1);
     }
-    let path = 'polygon(0 ' + value + '%, 100% 0%, 100% ' + (100-value) + '%, 0% 100%)';
+    const path =
+      'polygon(0 ' +
+      value +
+      '%, 100% 0%, 100% ' +
+      (100 - value) +
+      '%, 0% 100%)';
     // console.log(path)
     // this.animator.style['clip-path'] = path;
     this.animator.setAttribute('clip-path', path);
     this.animator.style.top =
-      scrollPerPage - 2 * this.swipeState * scrollPerPage + "px";
+      scrollPerPage - 2 * this.swipeState * scrollPerPage + 'px';
   }
   private onScroll() {
-    let scrollPerPage = window.innerHeight;
+    const scrollPerPage = window.innerHeight;
     this.swipeState = -this.swiper.getTranslate() / scrollPerPage;
     this.swipeState = this.swipeState - Math.floor(this.swipeState);
-
   }
   private async loadRepos() {
     this.repos = await getRepos();
