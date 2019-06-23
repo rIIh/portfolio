@@ -1,7 +1,7 @@
 <template lang="pug">
   .timeline
-    swiper()
-      swiper-slide(v-for="slide in getDataSwiper.slides" :key="")
+    swiper(:options="options")
+      swiper-slide(v-for="slide in entries" :key="")
         h1 test
 </template>
 
@@ -12,30 +12,40 @@
   left: 0
   width: 150px
   height: 100%
-  background: grey
   z-index: 50
+  *
+    height: 100%
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+
 
 @Component({
-  components: {
-  }
+    components: {}
 })
 export default class Home extends Vue {
-  @Prop()
-  private data: any[] | undefined;
+    @Prop()
+    private data: any[] | undefined;
+    @Prop()
+    private entries: entry[] | undefined;
 
+    private options = {
+        direction: "vertical",
+        resistanse: false,
+        mousewheel: true,
+        observer: true,
+        speed: 600,
+        slidesPerView: 4
+    };
 
-
-  private get getDataSwiper(){
-    if(this.data !== undefined){
-      return this.data;
+    private get getDataSwiper() {
+        if (this.data !== undefined) {
+            return this.data;
+        }
+        return {
+            slides: []
+        };
     }
-    return {
-      slides: []
-    }
-  }
 }
 </script>

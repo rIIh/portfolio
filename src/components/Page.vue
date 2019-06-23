@@ -16,30 +16,39 @@
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import colors from '@/api/colors';
-import { randomInteger } from '@/api/scripts';
+import { Component, Prop, Vue } from "vue-property-decorator";
+import colors from "@/api/colors";
+import { randomInteger } from "@/api/scripts";
+import { PageView, RepoView } from "../api/entries";
 
 @Component
 export default class ProjectPage extends Vue {
-  //   @Prop() private msg!: string;
-  @Prop() public repo: any | null;
-  private themeIndex: number = 0;
+    //   @Prop() private msg!: string;
+    @Prop() public repo: any | null;
 
-  private get theme() {
-    return colors[this.themeIndex];
-  }
-  get getRepo() {
-    return this.repo
-      ? this.repo
-      : {
-          url: '#',
-          name: 'test',
-        };
-  }
-  private mounted() {
-    this.themeIndex = randomInteger(0, colors.length - 1);
-    // this.background = _.size()
-  }
+    @Prop() private data: PageView | RepoView | undefined;
+    private themeIndex: number = 0;
+
+    private loadTemplate() {
+      if(this.data typeof RepoView){
+
+      }
+    }
+
+    private get theme() {
+        return colors[this.themeIndex];
+    }
+    get getRepo() {
+        return this.repo
+            ? this.repo
+            : {
+                  url: "#",
+                  name: "test"
+              };
+    }
+    private mounted() {
+        this.themeIndex = randomInteger(0, colors.length - 1);
+        this.loadTemplate();
+    }
 }
 </script>
