@@ -1,6 +1,6 @@
 <template lang="pug">
   .page()
-    component(:is="component")
+    component(:is="component" :data="pageComponentData.data")
 </template>
 
 <style lang="sass" scoped>
@@ -27,7 +27,6 @@ export default class ProjectPage extends Vue {
 
     private async loadComponent(){
         this.component = (await import('./pages/' + this.pageComponentData!.componentPath)).default;
-        console.log(this.component)
     }
 
     private mounted() {

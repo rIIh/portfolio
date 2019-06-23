@@ -1,39 +1,52 @@
 import Vue from 'vue';
 import Rest from '@octokit/rest';
 
+export enum Breaker{
+  None,
+  Before,
+  After
+}
 export interface PageComponent {
-  name: string,
+  name: string;
   componentPath: string;
+  data: any;
+  breaker: Breaker;
 }
 const Hub = new Rest({});
 
-
-export async function loadStructure(){
-  const Repos = (await Hub.repos.listForUser({
+async function loadRepos(){
+  return (await Hub.repos.listForUser({
     username: 'riih',
     per_page: 100,
     type: 'owner',
   })).data.filter((val: any) =>
-  val.fork === false,
+    val.fork === false,
   );
-
-  
 }
+let instance: PageComponent[] | undefined;
 
-const structure: PageComponent[] = [
-  {
-    name: 'head-page',
-    componentPath: 'test.vue',
-  },
-
-  {
-    name: 'foot-page',
-    componentPath: 'footer.vue',
-  }
-];
-
-structure.forEach(entry => {
-  Vue.component(entry.name, () => import(entry.componentPath));
-});
-
-export default structure;
+export async function loadStructure() {
+  if (instance !== undefined) { return instance; }
+  const repoPages = (await loadRepos()).map((repo: any) => {
+    return {
+      name: 'repo',
+      componentPath: 'repo.vue',
+      data: repo,
+    } as PageComponent;
+  });
+  const structure = [
+    {
+      name: 'head-page',
+      componentPath: 'head.vue',
+      breaker: Breaker.After,
+    },
+    ...repoPages,
+    {
+      name: 'foot-page',
+      componentPath: 'footer.vue',
+      breaker: Breaker.Before,
+    },
+  ];
+  instance = structure;
+  return structure;
+}

@@ -1,17 +1,39 @@
 @import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Lato:100|Quicksand:300|Raleway:100&display=swap');
+@import "./flexboxgrid.css";
+@import "./padmar.scss";
+
+.fill-height{
+    height: 100%;
+}
+.fill-width{
+    width: 100%;
+}
+
+a {
+    text-decoration: none;
+}
 
 body {
     height: 100vh;
     margin: 0;
     overflow: hidden;
+    background: rgb(26, 44, 44);
 
     * {
         margin: 0;
-    font-family: 'Montserrat','Courier New', Courier, monospace;
+        font-family: 'Lato', 'Raleway', 'Quicksand', 'Montserrat', 'Courier New', Courier, monospace;
+        color: white
 
     }
 }
-*{
+
+header {
+    position: fixed;
+    z-index: 60;
+}
+
+*:not(a) {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */

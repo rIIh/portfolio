@@ -1,21 +1,15 @@
 <template lang="pug">
 .parent
+  background
+  
+  header.fill-width.row.end-xs.pa20
+    h3.px10.box Hello
+    a.pl10.box(href="https://github.com/rIIh")
+        h3 Github
   swiper.container(:options="swiperOptions" ref="swiper" key="swiper")
-    swiper-slide(v-for="entry in structure" :key="entry.componentPath")
-      page(style="padding-left: 150px" :pageComponentData="entry")
-    //- swiper-slide()
-    //-   page(style="padding-left: 150px")
-    //-     h1 Hello
-    //- swiper-slide(v-for="(repo, i) in repos" :key="i")
-    //-   page(:repo="repo" style="padding-left: 150px")
-    //-     template(v-slot:title)
-    //-       h1 {{repo.name}}
-    //-     template(v-slot:tags)
-    //-       //- v-icon(name="star" scale="1.5" label="tes")
-    //-       h2 {{repo.stargazers_count}}
-    //-       h2 {{repo.language}}
-    //-     p Hello
-  timeline(:data="swiper" :entries="entries")
+    swiper-slide(v-for="entry in structure")
+      page(:style="'padding-left: ' + timelineWidth + 'px'" :pageComponentData="entry")
+  timeline(:swiperData="swiper" :entries="structure" :width="timelineWidth" @update:width="val => timelineWidth = val")
   overlay-slider(:getter="getState" key="overlay")
 </template>
 
@@ -34,13 +28,14 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import Page from "@/components/Page.vue";
+import Background from "@/components/Background.vue";
 import { getRepos } from "../api/gh";
 import { setInterval, clearInterval } from "timers";
 import { lerp } from "@/api/scripts";
 import OverlaySlider from "@/components/OverlaySlider.vue";
 import Timeline from "@/components/Timeline.vue";
 import { PageView, RepoView } from '@/api/entries';
-import structure, {PageComponent} from '@/structure/structure';
+import {PageComponent, loadStructure} from '@/structure/structure';
 
 let timer!: NodeJS.Timeout | undefined;
 
@@ -49,6 +44,7 @@ let timer!: NodeJS.Timeout | undefined;
         Page,
         OverlaySlider,
         Timeline,
+        Background
     }
 })
 export default class Home extends Vue {
@@ -58,13 +54,11 @@ export default class Home extends Vue {
         }
         return (this.$refs.swiper as any).swiper;
     }
-    private structure: PageComponent[] = structure;
+    private structure: PageComponent[] = [];
     private isMounted: boolean = false;
-    private repos: any[] = [];
     private swipeState: number = 0;
     private animating: boolean = false;
-    private entries: PageView[] = [];
-    // private viewStructure = JSON.parse(structure);
+    private timelineWidth: number = 50;
     private swiperOptions = {
         direction: 'vertical',
         resistanse: false,
@@ -79,21 +73,6 @@ export default class Home extends Vue {
 
     private getState() {
         return this.swipeState;
-    }
-    @Watch('repos', { deep: true })
-    private onReposChanged(val: any[]) {
-        this.entries = [
-            { id: 'header' },
-            ...this.repos.map((r) => {
-                return {
-                    title: r.name,
-                    id: r.fullname,
-                    tags: [{ label: r.stargazers_count, icon: 'star' }],
-                    previews: []
-                } as RepoView;
-            }),
-            { id: 'footer' }
-        ];
     }
 
     @Watch('animating')
@@ -131,14 +110,13 @@ export default class Home extends Vue {
         this.swipeState = state;
     }
 
-    private async loadRepos() {
-        this.repos = await getRepos();
+    private async loadStructure(){
+        this.structure = await loadStructure();
     }
 
     private mounted() {
-        this.loadRepos();
+        this.loadStructure();
         this.isMounted = true;
-        console.log(structure);
     }
 }
 </script>

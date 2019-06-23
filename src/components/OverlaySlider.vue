@@ -8,7 +8,7 @@ import { lerp } from '@/api/scripts';
 import { stat } from 'fs';
 
 @Component({})
-export default class Home extends Vue {
+export default class Overlay extends Vue {
   @Prop({required: true})
   private getter: any;
   private state = this.getter;
