@@ -1,8 +1,8 @@
 <template lang="pug">
 .parent
   swiper.container(:options="swiperOptions" ref="swiper" key="swiper")
-    swiper-slide(v-for="entry in entries" :key="entry.id")
-      page(style="padding-left: 150px" :data="entry")
+    swiper-slide(v-for="entry in structure" :key="entry.componentPath")
+      page(style="padding-left: 150px" :pageComponentData="entry")
     //- swiper-slide()
     //-   page(style="padding-left: 150px")
     //-     h1 Hello
@@ -39,7 +39,8 @@ import { setInterval, clearInterval } from "timers";
 import { lerp } from "@/api/scripts";
 import OverlaySlider from "@/components/OverlaySlider.vue";
 import Timeline from "@/components/Timeline.vue";
-import { PageView, RepoView } from "@/api/entries";
+import { PageView, RepoView } from '@/api/entries';
+import structure, {PageComponent} from '@/structure/structure';
 
 let timer!: NodeJS.Timeout | undefined;
 
@@ -47,7 +48,7 @@ let timer!: NodeJS.Timeout | undefined;
     components: {
         Page,
         OverlaySlider,
-        Timeline
+        Timeline,
     }
 })
 export default class Home extends Vue {
@@ -57,13 +58,15 @@ export default class Home extends Vue {
         }
         return (this.$refs.swiper as any).swiper;
     }
+    private structure: PageComponent[] = structure;
     private isMounted: boolean = false;
     private repos: any[] = [];
     private swipeState: number = 0;
     private animating: boolean = false;
     private entries: PageView[] = [];
+    // private viewStructure = JSON.parse(structure);
     private swiperOptions = {
-        direction: "vertical",
+        direction: 'vertical',
         resistanse: false,
         mousewheel: true,
         observer: true,
@@ -77,23 +80,23 @@ export default class Home extends Vue {
     private getState() {
         return this.swipeState;
     }
-    @Watch("repos", { deep: true })
+    @Watch('repos', { deep: true })
     private onReposChanged(val: any[]) {
         this.entries = [
-            { id: "header" },
-            ...this.repos.map(r => {
+            { id: 'header' },
+            ...this.repos.map((r) => {
                 return {
                     title: r.name,
                     id: r.fullname,
-                    tags: [{ label: r.stargazers_count, icon: "star" }],
+                    tags: [{ label: r.stargazers_count, icon: 'star' }],
                     previews: []
                 } as RepoView;
             }),
-            { id: "footer" }
+            { id: 'footer' }
         ];
     }
 
-    @Watch("animating")
+    @Watch('animating')
     private onAnimating(val: boolean, oldVal: boolean) {
         if (oldVal || !val) {
             return;
@@ -135,6 +138,7 @@ export default class Home extends Vue {
     private mounted() {
         this.loadRepos();
         this.isMounted = true;
+        console.log(structure);
     }
 }
 </script>

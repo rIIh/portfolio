@@ -18,34 +18,37 @@
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
+import { PageView, RepoView } from '../api/entries';
 
 @Component({
-    components: {}
+  components: {},
 })
 export default class Home extends Vue {
-    @Prop()
-    private data: any[] | undefined;
-    @Prop()
-    private entries: entry[] | undefined;
+  @Prop()
+  private data: any[] | undefined;
+  @Prop()
+  private entries: PageView[] | undefined;
 
-    private options = {
-        direction: "vertical",
-        resistanse: false,
-        mousewheel: true,
-        observer: true,
-        speed: 600,
-        slidesPerView: 4
-    };
+  private options = {
+    direction: 'vertical',
+    resistanse: false,
+    mousewheel: true,
+    observer: true,
+    speed: 600,
+    slidesPerView: 4,
+  };
 
-    private get getDataSwiper() {
-        if (this.data !== undefined) {
-            return this.data;
-        }
-        return {
-            slides: []
-        };
+  private syncProgress(progress: number) {
+    console.log(progress);
+  }
+  private get getDataSwiper() {
+    if (this.data !== undefined) {
+      return this.data;
     }
+    return {
+      slides: [],
+    };
+  }
 }
 </script>
