@@ -20,7 +20,7 @@ export default class Overlay extends Vue {
 
   private get style() {
     let value: number;
-    const scrollPerPage = window.innerHeight;
+    const scrollPerPage = window.outerHeight;
     if (this.getState < 0.5) {
       value = lerp(0, 30, this.getState * 2);
     } else {
