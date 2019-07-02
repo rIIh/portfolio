@@ -10,7 +10,6 @@
 </template>
 
 <style lang="scss">
-
 .timeline{
   position: fixed;
   top: 0;
@@ -49,7 +48,7 @@
     // width: 75%;
     // background: white;
     color: white;
-    background: rgb(26, 44, 44);
+    background: $background-color;
     transition: 0.25s;
     // height: 100%;
   }
