@@ -13,7 +13,7 @@
     "github-api": "^3.2.2",
     "intersection-observer": "^0.7.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.6.0",
+    "mongoose": "^5.7.5",
     "register-service-worker": "^1.6.2",
     "sass-spacing": "^2.0.0",
     "vue": "^2.6.10",
